@@ -1,0 +1,113 @@
+{
+  "name": "project-name",
+  "description": "Template for static sites",
+  "version": "1.0.0",
+  "homepage": "http://www.project-name.com",
+  "author": {
+    "name": "tnn4",
+    "url": "http://github.com/tnn4"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "engines": {
+    "node": ">=6.3.0",
+    "npm": ">=3.10.5"
+  },
+  "scripts": {
+    
+    "reinstall": "rimraf node_modules && npm cache clean && npm install",
+    "start": "run-p serve watch",
+    
+    "// CSS": "--- CSS ---",
+    "css:dev": "node-sass  -o dist/css/ --output-style compressed src/scss/index.scss > dist/css/app.css",
+    "css:prod": "node-sass  -o dist/css/ --output-style compressed src/scss/index.scss | postcss -u autoprefixer -b 'last 2 versions' > dist/css/app.css",
+    
+    "// JS": "--- JAVASCRIPT ---",
+    "js:dev": "babel src/js | uglifyjs > dist/js/app.js",
+    "js:prod": "babel src/js | uglifyjs -m -c > dist/js/app.js",
+    "js:vendor": "uglifyjs vendor/*.js > dist/js/vendor.js",
+    
+    "// DIRECTORY": " --- DIRECTORY UTILITIES ---",
+    "clean": "rimraf dist",
+    "mkdirs": "mkdir -p dist/js && mkdir -p dist/css && mkdir -p dist/data && mkdir -p vendor",
+    
+    "// COPY": " --- COPY --- ",
+    "copy:data": "cp -r data/* dist/data/",
+    "copy:html": "find src -name '*.html' -type f -exec cp {} dist \\;",
+    "copy": "npm run copy:data && npm run copy:html",
+    
+    "// BUILD": "--- BUILD ---",
+    "prebuild:dev": "npm run clean && npm run mkdirs && npm run copy",
+    "build:dev": "npm run css:dev && npm run js:dev && npm run js:vendor",
+    "prebuild:prod": "npm run clean && npm run mkdirs && npm run copy",
+    "build:prod": "npm run css:prod && npm run js:prod && npm run js:vendor",
+    "postbuild:prod": "npm run hash",
+    
+    "// HASH": " --- HASHING --- ",
+    "hash": "hashmark **/(app|vendor).* -d md5 -l 8 -c dist '{dir}/{name}.{hash}{ext}' | replaceinfiles -S -s dist/**/*.html",
+    "posthash": "rm dist/css/app.css && rm dist/js/app.js",
+    "lint": "eslint src/js --fix",
+    
+    "// TEST": " --- TEST ---",
+    "pretest": "npm run lint",
+    "test": "npm run istanbul -s",
+    "posttest": "npm run coverage -s",
+    "istanbul": "istanbul cover ./node_modules/mocha/bin/_mocha 'test/**/*.spec.js'",
+    "coverage": "open -a 'Google Chrome' ./coverage/lcov-report/index.html",
+    
+    "// PROCESS": " --- PROCESS --- ",
+    "kill": "lsof -n -i:8080 | grep LISTEN | awk '{print $2}' | xargs kill -9",
+    "preserve": "npm run build:dev && npm run kill",
+    "serve": "browser-sync start -s --files 'dist/**/*.(js|css|html)' --ss 'dist' --port 8080 --reload-debounce 500",
+    
+    "// WATCH": "--- WATCH ---",
+    "watch:data": "onchange 'data/**/*' -- npm run copy:data",
+    "watch:vendor": "onchange 'vendor/**/*.js' -- npm run js:vendor",
+    "watch:html": "onchange 'src/**/*.html' -- npm run copy:html",
+    "watch:css": "onchange 'src/**/*.scss' -- npm run css:dev",
+    "watch:js": "onchange 'src/**/*.js' -- npm run js:dev",
+    "watch": "run-p watch:css watch:js watch:html watch:data",
+    
+    "// DEPLOY": " --- DEPLOYMENT & ZIP --- ",
+    "postversion": "git push && git push --tags",
+    "predeploy": "npm run build:prod",
+    "deploy": "firebase deploy --project project-name",
+    "prezip": "npm run build:prod",
+    "zip": "cd dist && zip -r -X ../app.zip ."
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.0",
+    "@babel/core": "^7.23.0",
+    "autoprefixer": "^6.3.7",
+    "browser-sync": "^2.14.0",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "dirty-chai": "^1.2.2",
+    "eslint": "^3.2.2",
+    "firebase-tools": "^3.0.5",
+    "hashmark": "^3.1.0",
+    "istanbul": "^0.4.0",
+    "mocha": "^2.5.3",
+    "mocha-clean": "^1.0.0",
+    "node-sass": "^9.0.0",
+    "npm-run-all": "^4.1.5",
+    "onchange": "^2.5.0",
+    "parcel": "^2.9.3",
+    "postcss-cli": "^2.5.2",
+    "process": "^0.11.10",
+    "replaceinfiles": "^1.1.4",
+    "rimraf": "^2.5.4",
+    "uglify-js": "^3.17.4"
+  },
+  "dependencies": {
+    "phaser": "^3.60.0",
+    "uglifyjs": "^2.4.11"
+  }
+}
